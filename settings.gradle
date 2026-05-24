@@ -1,1 +1,13 @@
 rootProject.name = 'omo'
+
+include 'apps:omo-api'
+include 'apps:omo-batch'
+include 'apps:omo-streamer'
+
+include 'modules:jpa'
+include 'modules:redis'
+include 'modules:kafka'
+
+include 'supports:jackson'
+include 'supports:logging'
+include 'supports:monitoring'
