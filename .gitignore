@@ -58,6 +58,7 @@ lib/generated_plugin_registrant.dart
 #pubspec.lock
 
 # Android related
+local.properties
 **/android/**/gradle-wrapper.jar
 **/android/.gradle
 **/android/captures/
