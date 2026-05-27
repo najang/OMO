@@ -30,16 +30,16 @@ public class User extends BaseEntity {
 
     public User(String email, String nickname, SocialProvider provider, String providerId) {
         if (email == null || email.isBlank()) {
-            throw new CoreException(ErrorType.BAD_REQUEST, "이메일은 비어있을 수 없습니다.");
+            throw new CoreException(ErrorType.INVALID_INPUT, "이메일은 비어있을 수 없습니다.");
         }
         if (nickname == null || nickname.isBlank()) {
-            throw new CoreException(ErrorType.BAD_REQUEST, "닉네임은 비어있을 수 없습니다.");
+            throw new CoreException(ErrorType.INVALID_INPUT, "닉네임은 비어있을 수 없습니다.");
         }
         if (provider == null) {
-            throw new CoreException(ErrorType.BAD_REQUEST, "소셜 프로바이더는 필수입니다.");
+            throw new CoreException(ErrorType.INVALID_INPUT, "소셜 프로바이더는 필수입니다.");
         }
         if (providerId == null || providerId.isBlank()) {
-            throw new CoreException(ErrorType.BAD_REQUEST, "프로바이더 ID는 비어있을 수 없습니다.");
+            throw new CoreException(ErrorType.INVALID_INPUT, "프로바이더 ID는 비어있을 수 없습니다.");
         }
 
         this.email = email;
@@ -50,7 +50,7 @@ public class User extends BaseEntity {
 
     public void updateNickname(String nickname) {
         if (nickname == null || nickname.isBlank()) {
-            throw new CoreException(ErrorType.BAD_REQUEST, "닉네임은 비어있을 수 없습니다.");
+            throw new CoreException(ErrorType.INVALID_INPUT, "닉네임은 비어있을 수 없습니다.");
         }
         this.nickname = nickname;
     }

@@ -15,7 +15,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public User getUser(Long id) {
         return userRepository.find(id)
-                .orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND, "[id = " + id + "] 유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CoreException(ErrorType.USER_NOT_FOUND, "[id = " + id + "] 유저를 찾을 수 없습니다."));
     }
 
     /**
