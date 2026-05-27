@@ -40,9 +40,7 @@ class UserServiceIntegrationTest {
         @Test
         void returnsUser_whenUserExists() {
             // arrange
-            User saved = userJpaRepository.save(
-                new User("find@omo.com", "조회유저", SocialProvider.GOOGLE, "google-uid-find")
-            );
+            User saved = createUser("find@omo.com", "조회유저", SocialProvider.GOOGLE, "google-uid-find");
 
             // act
             User result = userService.getUser(saved.getId());
@@ -67,7 +65,7 @@ class UserServiceIntegrationTest {
             );
 
             // assert
-            assertThat(result.getErrorType()).isEqualTo(ErrorType.NOT_FOUND);
+            assertThat(result.getErrorType()).isEqualTo(ErrorType.USER_NOT_FOUND);
         }
     }
 
@@ -101,9 +99,7 @@ class UserServiceIntegrationTest {
         @Test
         void returnsExistingUser_whenAlreadyRegistered() {
             // arrange
-            User existing = userJpaRepository.save(
-                new User("existing@omo.com", "기존유저", SocialProvider.KAKAO, "kakao-uid-001")
-            );
+            User existing = createUser("existing@omo.com", "기존유저", SocialProvider.KAKAO, "kakao-uid-001");
 
             // act
             User result = userService.getOrCreateUser(
@@ -121,9 +117,7 @@ class UserServiceIntegrationTest {
         @Test
         void createsNewUser_whenProviderInfoIsDifferent() {
             // arrange
-            userJpaRepository.save(
-                new User("same@omo.com", "구글유저", SocialProvider.GOOGLE, "google-uid-abc")
-            );
+            createUser("same@omo.com", "구글유저", SocialProvider.GOOGLE, "google-uid-abc");
 
             // act — 같은 이메일이지만 provider가 다름 (APPLE)
             User result = userService.getOrCreateUser(
@@ -134,5 +128,9 @@ class UserServiceIntegrationTest {
             assertThat(userJpaRepository.count()).isEqualTo(2);
             assertThat(result.getProvider()).isEqualTo(SocialProvider.APPLE);
         }
+    }
+
+    private User createUser(String email, String nickname, SocialProvider provider, String providerId) {
+        return userService.getOrCreateUser(email, nickname, provider, providerId);
     }
 }

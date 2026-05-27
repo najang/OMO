@@ -97,6 +97,19 @@ class UserTempProfileModelTest {
             assertThat(profile.getTempOffset()).isCloseTo(0.15, within(0.001));
         }
 
+        @DisplayName("누적 피드백이 정확히 5개이면, 정상 변화량(0.3)이 적용된다.")
+        @Test
+        void appliesFullWeight_whenFeedbackCountIsExactlyThreshold() {
+            // arrange
+            UserTempProfile profile = profileWithOffset(0.0, 5); // feedbackCount == 5
+
+            // act
+            profile.applyFeedback(FeedbackType.HOT);
+
+            // assert
+            assertThat(profile.getTempOffset()).isCloseTo(0.3, within(0.001));
+        }
+
         @DisplayName("tempOffset이 +3.0을 초과하지 않는다 (상한 clamp).")
         @Test
         void clampsAtMaxOffset_whenExceedsUpperBound() {
@@ -123,6 +136,20 @@ class UserTempProfileModelTest {
             assertThat(profile.getTempOffset()).isCloseTo(-3.0, within(0.001));
         }
 
+        @DisplayName("tempOffset이 이미 +3.0이어도 HOT 피드백이면, feedbackCount는 증가한다.")
+        @Test
+        void incrementsFeedbackCount_evenWhenOffsetIsClamped() {
+            // arrange
+            UserTempProfile profile = profileWithOffset(3.0, 10);
+
+            // act
+            profile.applyFeedback(FeedbackType.HOT);
+
+            // assert
+            assertThat(profile.getTempOffset()).isCloseTo(3.0, within(0.001));
+            assertThat(profile.getFeedbackCount()).isEqualTo(11);
+        }
+
         @DisplayName("INDOOR/MODERATE가 아닌 피드백이면, feedbackCount가 1 증가한다.")
         @Test
         void incrementsFeedbackCount_whenMeaningfulFeedbackIsApplied() {
@@ -144,6 +171,19 @@ class UserTempProfileModelTest {
 
             // act
             profile.applyFeedback(FeedbackType.INDOOR);
+
+            // assert
+            assertThat(profile.getFeedbackCount()).isEqualTo(3);
+        }
+
+        @DisplayName("MODERATE 피드백이면, feedbackCount가 증가하지 않는다.")
+        @Test
+        void doesNotIncrementFeedbackCount_whenFeedbackIsModerate() {
+            // arrange
+            UserTempProfile profile = profileWithOffset(0.0, 3);
+
+            // act
+            profile.applyFeedback(FeedbackType.MODERATE);
 
             // assert
             assertThat(profile.getFeedbackCount()).isEqualTo(3);
