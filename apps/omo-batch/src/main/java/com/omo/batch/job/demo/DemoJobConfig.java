@@ -4,14 +4,14 @@ import com.omo.batch.job.demo.step.DemoTasklet;
 import com.omo.batch.listener.JobListener;
 import com.omo.batch.listener.StepMonitorListener;
 import lombok.RequiredArgsConstructor;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobScope;
+import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.job.parameters.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.support.transaction.ResourcelessTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +24,7 @@ public class DemoJobConfig {
     private static final String STEP_DEMO_SIMPLE_TASK_NAME = "demoSimpleTask";
 
     private final JobRepository jobRepository;
+    private final PlatformTransactionManager transactionManager;
     private final JobListener jobListener;
     private final StepMonitorListener stepMonitorListener;
     private final DemoTasklet demoTasklet;
@@ -41,7 +42,7 @@ public class DemoJobConfig {
     @Bean(STEP_DEMO_SIMPLE_TASK_NAME)
     public Step categorySyncStep() {
         return new StepBuilder(STEP_DEMO_SIMPLE_TASK_NAME, jobRepository)
-                .tasklet(demoTasklet, new ResourcelessTransactionManager())
+                .tasklet(demoTasklet, transactionManager)
                 .listener(stepMonitorListener)
                 .build();
     }
