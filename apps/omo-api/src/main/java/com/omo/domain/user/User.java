@@ -8,9 +8,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "user")
+@Table(name = "user", uniqueConstraints = {
+    @UniqueConstraint(name = "uk_user_provider", columnNames = {"provider", "provider_id"})
+})
 public class User extends BaseEntity {
 
     @Column(name = "email", nullable = false)
