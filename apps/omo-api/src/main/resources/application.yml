@@ -29,6 +29,15 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+jwt:
+  secret: ${JWT_SECRET:local-dev-secret-key-must-be-at-least-32-chars-long}
+  access-expiry: 3600000      # 1 hour (ms)
+  refresh-expiry: 2592000000  # 30 days (ms)
+
+social:
+  apple:
+    client-id: ${APPLE_CLIENT_ID:com.omo.app}
+
 ---
 spring:
   config:
