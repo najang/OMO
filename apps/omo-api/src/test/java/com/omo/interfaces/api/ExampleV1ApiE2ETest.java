@@ -1,6 +1,9 @@
 package com.omo.interfaces.api;
 
 import com.omo.domain.example.ExampleModel;
+import com.omo.infrastructure.auth.social.AppleAuthClient;
+import com.omo.infrastructure.auth.social.GoogleAuthClient;
+import com.omo.infrastructure.auth.social.KakaoAuthClient;
 import com.omo.infrastructure.example.ExampleJpaRepository;
 import com.omo.interfaces.api.example.ExampleV1Dto;
 import com.omo.utils.DatabaseCleanUp;
@@ -11,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -27,6 +31,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ExampleV1ApiE2ETest {
 
     private static final Function<Long, String> ENDPOINT_GET = id -> "/api/v1/examples/" + id;
+
+    @MockitoBean
+    private GoogleAuthClient googleAuthClient;
+
+    @MockitoBean
+    private KakaoAuthClient kakaoAuthClient;
+
+    @MockitoBean
+    private AppleAuthClient appleAuthClient;
 
     private final TestRestTemplate testRestTemplate;
     private final ExampleJpaRepository exampleJpaRepository;

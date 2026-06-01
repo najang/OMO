@@ -1,5 +1,8 @@
 package com.omo.domain.example;
 
+import com.omo.infrastructure.auth.social.AppleAuthClient;
+import com.omo.infrastructure.auth.social.GoogleAuthClient;
+import com.omo.infrastructure.auth.social.KakaoAuthClient;
 import com.omo.infrastructure.example.ExampleJpaRepository;
 import com.omo.support.error.CoreException;
 import com.omo.support.error.ErrorType;
@@ -10,6 +13,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -17,6 +21,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 class ExampleServiceIntegrationTest {
+
+    @MockitoBean
+    private GoogleAuthClient googleAuthClient;
+
+    @MockitoBean
+    private KakaoAuthClient kakaoAuthClient;
+
+    @MockitoBean
+    private AppleAuthClient appleAuthClient;
+
     @Autowired
     private ExampleService exampleService;
 
