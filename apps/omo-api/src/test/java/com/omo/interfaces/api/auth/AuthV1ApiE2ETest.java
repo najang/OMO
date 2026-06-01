@@ -1,6 +1,6 @@
 package com.omo.interfaces.api.auth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.omo.application.auth.SocialUserInfo;
 import com.omo.domain.user.SocialProvider;
 import com.omo.infrastructure.auth.social.AppleAuthClient;
@@ -87,10 +87,11 @@ class AuthV1ApiE2ETest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.accessToken", notNullValue()))
                 .andExpect(jsonPath("$.data.refreshToken", notNullValue()))
-                .andExpect(jsonPath("$.data.userId", notNullValue()));
+                .andExpect(jsonPath("$.data.userId", notNullValue()))
+                .andExpect(jsonPath("$.data.isNewUser").value(true));
         }
 
-        @DisplayName("Kakao 토큰이 유효하면, 200과 JWT 토큰을 반환한다.")
+        @DisplayName("Kakao 토큰이 유효하면, 200과 JWT 토큰을 반환하고 isNewUser가 true다.")
         @Test
         void returnsJwt_whenKakaoTokenIsValid() throws Exception {
             // arrange
@@ -102,10 +103,11 @@ class AuthV1ApiE2ETest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(toJson(new AuthV1Dto.LoginRequest(SocialProvider.KAKAO, "kakao-token"))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.accessToken", notNullValue()));
+                .andExpect(jsonPath("$.data.accessToken", notNullValue()))
+                .andExpect(jsonPath("$.data.isNewUser").value(true));
         }
 
-        @DisplayName("Apple 토큰이 유효하면, 200과 JWT 토큰을 반환한다.")
+        @DisplayName("Apple 토큰이 유효하면, 200과 JWT 토큰을 반환하고 isNewUser가 true다.")
         @Test
         void returnsJwt_whenAppleTokenIsValid() throws Exception {
             // arrange
@@ -117,10 +119,11 @@ class AuthV1ApiE2ETest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(toJson(new AuthV1Dto.LoginRequest(SocialProvider.APPLE, "apple-token"))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.accessToken", notNullValue()));
+                .andExpect(jsonPath("$.data.accessToken", notNullValue()))
+                .andExpect(jsonPath("$.data.isNewUser").value(true));
         }
 
-        @DisplayName("같은 소셜 계정으로 두 번 로그인하면, 동일한 userId를 반환한다.")
+        @DisplayName("같은 소셜 계정으로 두 번 로그인하면, 동일한 userId와 일관된 isNewUser를 반환한다.")
         @Test
         void returnsSameUserId_onRepeatedLogin() throws Exception {
             // arrange
@@ -137,10 +140,14 @@ class AuthV1ApiE2ETest {
                     .contentType(MediaType.APPLICATION_JSON).content(body))
                 .andReturn().getResponse().getContentAsString();
 
-            // assert - userId 동일
+            // assert - userId 동일, isNewUser 일관성 (미온보딩 상태 유지)
             Long firstUserId = objectMapper.readTree(first).at("/data/userId").asLong();
             Long secondUserId = objectMapper.readTree(second).at("/data/userId").asLong();
+            boolean firstIsNewUser = objectMapper.readTree(first).at("/data/isNewUser").asBoolean();
+            boolean secondIsNewUser = objectMapper.readTree(second).at("/data/isNewUser").asBoolean();
             assertThat(firstUserId).isEqualTo(secondUserId);
+            assertThat(firstIsNewUser).isTrue();
+            assertThat(secondIsNewUser).isEqualTo(firstIsNewUser);
         }
     }
 

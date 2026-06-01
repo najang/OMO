@@ -37,7 +37,7 @@ class UserModelTest {
             );
         }
 
-        @DisplayName("이메일이 null이면, BAD_REQUEST 예외가 발생한다.")
+        @DisplayName("이메일이 null이면, INVALID_INPUT 예외가 발생한다.")
         @Test
         void throwsBadRequest_whenEmailIsNull() {
             CoreException result = assertThrows(CoreException.class, () ->
@@ -46,7 +46,7 @@ class UserModelTest {
             assertThat(result.getErrorType()).isEqualTo(ErrorType.INVALID_INPUT);
         }
 
-        @DisplayName("이메일이 비어있으면, BAD_REQUEST 예외가 발생한다.")
+        @DisplayName("이메일이 비어있으면, INVALID_INPUT 예외가 발생한다.")
         @Test
         void throwsBadRequest_whenEmailIsBlank() {
             CoreException result = assertThrows(CoreException.class, () ->
@@ -55,7 +55,7 @@ class UserModelTest {
             assertThat(result.getErrorType()).isEqualTo(ErrorType.INVALID_INPUT);
         }
 
-        @DisplayName("닉네임이 null이면, BAD_REQUEST 예외가 발생한다.")
+        @DisplayName("닉네임이 null이면, INVALID_INPUT 예외가 발생한다.")
         @Test
         void throwsBadRequest_whenNicknameIsNull() {
             CoreException result = assertThrows(CoreException.class, () ->
@@ -64,7 +64,7 @@ class UserModelTest {
             assertThat(result.getErrorType()).isEqualTo(ErrorType.INVALID_INPUT);
         }
 
-        @DisplayName("닉네임이 비어있으면, BAD_REQUEST 예외가 발생한다.")
+        @DisplayName("닉네임이 비어있으면, INVALID_INPUT 예외가 발생한다.")
         @Test
         void throwsBadRequest_whenNicknameIsBlank() {
             CoreException result = assertThrows(CoreException.class, () ->
@@ -73,7 +73,7 @@ class UserModelTest {
             assertThat(result.getErrorType()).isEqualTo(ErrorType.INVALID_INPUT);
         }
 
-        @DisplayName("소셜 프로바이더가 null이면, BAD_REQUEST 예외가 발생한다.")
+        @DisplayName("소셜 프로바이더가 null이면, INVALID_INPUT 예외가 발생한다.")
         @Test
         void throwsBadRequest_whenProviderIsNull() {
             CoreException result = assertThrows(CoreException.class, () ->
@@ -82,7 +82,7 @@ class UserModelTest {
             assertThat(result.getErrorType()).isEqualTo(ErrorType.INVALID_INPUT);
         }
 
-        @DisplayName("프로바이더 ID가 null이면, BAD_REQUEST 예외가 발생한다.")
+        @DisplayName("프로바이더 ID가 null이면, INVALID_INPUT 예외가 발생한다.")
         @Test
         void throwsBadRequest_whenProviderIdIsNull() {
             CoreException result = assertThrows(CoreException.class, () ->
@@ -91,7 +91,7 @@ class UserModelTest {
             assertThat(result.getErrorType()).isEqualTo(ErrorType.INVALID_INPUT);
         }
 
-        @DisplayName("프로바이더 ID가 비어있으면, BAD_REQUEST 예외가 발생한다.")
+        @DisplayName("프로바이더 ID가 비어있으면, INVALID_INPUT 예외가 발생한다.")
         @Test
         void throwsBadRequest_whenProviderIdIsBlank() {
             CoreException result = assertThrows(CoreException.class, () ->
@@ -101,55 +101,142 @@ class UserModelTest {
         }
     }
 
-    @DisplayName("닉네임을 변경할 때,")
+    @DisplayName("온보딩 닉네임을 설정할 때,")
     @Nested
-    class UpdateNickname {
+    class CompleteOnboarding {
 
-        @DisplayName("유효한 닉네임이 주어지면, 닉네임만 변경되고 다른 필드는 그대로다.")
+        @DisplayName("새로 생성한 유저는 onboardingCompleted가 false다.")
         @Test
-        void updatesNickname_whenValidNicknameIsProvided() {
-            // arrange
-            User user = new User("test@omo.com", "기존닉네임", SocialProvider.KAKAO, "uid-456");
+        void defaultOnboardingCompleted_isFalse() {
+            User user = new User("test@omo.com", "소셜닉네임", SocialProvider.GOOGLE, "uid-1");
 
-            // act
-            user.updateNickname("새닉네임");
+            assertThat(user.isOnboardingCompleted()).isFalse();
+        }
 
-            // assert
+        @DisplayName("한글 닉네임이면, 닉네임과 onboardingCompleted가 업데이트된다.")
+        @Test
+        void completesOnboarding_withKoreanNickname() {
+            User user = new User("test@omo.com", "소셜닉네임", SocialProvider.GOOGLE, "uid-1");
+
+            user.completeOnboarding("햇살곰");
+
             assertAll(
-                () -> assertThat(user.getNickname()).isEqualTo("새닉네임"),
-                () -> assertThat(user.getEmail()).isEqualTo("test@omo.com"),
-                () -> assertThat(user.getProvider()).isEqualTo(SocialProvider.KAKAO),
-                () -> assertThat(user.getProviderId()).isEqualTo("uid-456")
+                () -> assertThat(user.getNickname()).isEqualTo("햇살곰"),
+                () -> assertThat(user.isOnboardingCompleted()).isTrue()
             );
         }
 
-        @DisplayName("닉네임이 null이면, BAD_REQUEST 예외가 발생한다.")
+        @DisplayName("영어 닉네임이면, 닉네임과 onboardingCompleted가 업데이트된다.")
         @Test
-        void throwsBadRequest_whenNicknameIsNull() {
-            // arrange
-            User user = new User("test@omo.com", "기존닉네임", SocialProvider.KAKAO, "uid-456");
+        void completesOnboarding_withEnglishNickname() {
+            User user = new User("test@omo.com", "소셜닉네임", SocialProvider.GOOGLE, "uid-1");
 
-            // act
-            CoreException result = assertThrows(CoreException.class, () ->
-                user.updateNickname(null)
+            user.completeOnboarding("sunny");
+
+            assertAll(
+                () -> assertThat(user.getNickname()).isEqualTo("sunny"),
+                () -> assertThat(user.isOnboardingCompleted()).isTrue()
             );
+        }
 
-            // assert
+        @DisplayName("한글+영어 혼합 닉네임이면, 닉네임과 onboardingCompleted가 업데이트된다.")
+        @Test
+        void completesOnboarding_withMixedNickname() {
+            User user = new User("test@omo.com", "소셜닉네임", SocialProvider.GOOGLE, "uid-1");
+
+            user.completeOnboarding("곰a");
+
+            assertAll(
+                () -> assertThat(user.getNickname()).isEqualTo("곰a"),
+                () -> assertThat(user.isOnboardingCompleted()).isTrue()
+            );
+        }
+
+        @DisplayName("2자(최소 경계) 닉네임이면, 정상 설정된다.")
+        @Test
+        void completesOnboarding_withMinLengthNickname() {
+            User user = new User("test@omo.com", "소셜닉네임", SocialProvider.GOOGLE, "uid-1");
+
+            user.completeOnboarding("곰곰");
+
+            assertAll(
+                () -> assertThat(user.getNickname()).isEqualTo("곰곰"),
+                () -> assertThat(user.isOnboardingCompleted()).isTrue()
+            );
+        }
+
+        @DisplayName("6자(최대 경계) 닉네임이면, 정상 설정된다.")
+        @Test
+        void completesOnboarding_withMaxLengthNickname() {
+            User user = new User("test@omo.com", "소셜닉네임", SocialProvider.GOOGLE, "uid-1");
+
+            user.completeOnboarding("일이삼사오육");
+
+            assertAll(
+                () -> assertThat(user.getNickname()).isEqualTo("일이삼사오육"),
+                () -> assertThat(user.isOnboardingCompleted()).isTrue()
+            );
+        }
+
+        @DisplayName("이미 완료된 온보딩을 다시 호출하면, 닉네임이 덮어씌워진다.")
+        @Test
+        void overwritesNickname_whenCalledAgain() {
+            User user = new User("test@omo.com", "소셜닉네임", SocialProvider.GOOGLE, "uid-1");
+            user.completeOnboarding("첫번째");
+
+            user.completeOnboarding("두번째");
+
+            assertThat(user.getNickname()).isEqualTo("두번째");
+            assertThat(user.isOnboardingCompleted()).isTrue();
+        }
+
+        @DisplayName("닉네임이 null이면, INVALID_INPUT 예외가 발생한다.")
+        @Test
+        void throwsInvalidInput_whenNicknameIsNull() {
+            User user = new User("test@omo.com", "소셜닉네임", SocialProvider.GOOGLE, "uid-1");
+
+            CoreException result = assertThrows(CoreException.class, () -> user.completeOnboarding(null));
+
             assertThat(result.getErrorType()).isEqualTo(ErrorType.INVALID_INPUT);
         }
 
-        @DisplayName("닉네임이 비어있으면, BAD_REQUEST 예외가 발생한다.")
+        @DisplayName("닉네임이 1자면, INVALID_INPUT 예외가 발생한다.")
         @Test
-        void throwsBadRequest_whenNicknameIsBlank() {
-            // arrange
-            User user = new User("test@omo.com", "기존닉네임", SocialProvider.KAKAO, "uid-456");
+        void throwsInvalidInput_whenNicknameIsTooShort() {
+            User user = new User("test@omo.com", "소셜닉네임", SocialProvider.GOOGLE, "uid-1");
 
-            // act
-            CoreException result = assertThrows(CoreException.class, () ->
-                user.updateNickname("   ")
-            );
+            CoreException result = assertThrows(CoreException.class, () -> user.completeOnboarding("곰"));
 
-            // assert
+            assertThat(result.getErrorType()).isEqualTo(ErrorType.INVALID_INPUT);
+        }
+
+        @DisplayName("닉네임이 7자면, INVALID_INPUT 예외가 발생한다.")
+        @Test
+        void throwsInvalidInput_whenNicknameIsTooLong() {
+            User user = new User("test@omo.com", "소셜닉네임", SocialProvider.GOOGLE, "uid-1");
+
+            CoreException result = assertThrows(CoreException.class, () -> user.completeOnboarding("일이삼사오육칠"));
+
+            assertThat(result.getErrorType()).isEqualTo(ErrorType.INVALID_INPUT);
+        }
+
+        @DisplayName("숫자가 포함된 닉네임이면, INVALID_INPUT 예외가 발생한다.")
+        @Test
+        void throwsInvalidInput_whenNicknameContainsNumber() {
+            User user = new User("test@omo.com", "소셜닉네임", SocialProvider.GOOGLE, "uid-1");
+
+            CoreException result = assertThrows(CoreException.class, () -> user.completeOnboarding("햇살1"));
+
+            assertThat(result.getErrorType()).isEqualTo(ErrorType.INVALID_INPUT);
+        }
+
+        @DisplayName("특수문자가 포함된 닉네임이면, INVALID_INPUT 예외가 발생한다.")
+        @Test
+        void throwsInvalidInput_whenNicknameContainsSpecialChar() {
+            User user = new User("test@omo.com", "소셜닉네임", SocialProvider.GOOGLE, "uid-1");
+
+            CoreException result = assertThrows(CoreException.class, () -> user.completeOnboarding("햇살!"));
+
             assertThat(result.getErrorType()).isEqualTo(ErrorType.INVALID_INPUT);
         }
     }
