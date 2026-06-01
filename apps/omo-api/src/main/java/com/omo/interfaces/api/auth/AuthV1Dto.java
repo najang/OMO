@@ -14,10 +14,11 @@ public class AuthV1Dto {
     public record LoginResponse(
         @Schema(description = "액세스 토큰") String accessToken,
         @Schema(description = "리프레시 토큰") String refreshToken,
-        @Schema(description = "유저 ID") Long userId
+        @Schema(description = "유저 ID") Long userId,
+        @Schema(description = "신규 유저 여부 — true면 닉네임 설정 화면으로 이동") boolean isNewUser
     ) {
         public static LoginResponse from(AuthInfo info) {
-            return new LoginResponse(info.accessToken(), info.refreshToken(), info.userId());
+            return new LoginResponse(info.accessToken(), info.refreshToken(), info.userId(), info.isNewUser());
         }
     }
 }
