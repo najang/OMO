@@ -245,9 +245,4 @@ try {
 
 Spring Boot 4.x에서 `@RestClientTest`가 제거됐기 때문에, 소셜 클라이언트 테스트는 `MockRestServiceServer.bindTo(RestClient.Builder)` 패턴으로 Spring 컨텍스트 없이 구성했다.
 
----
 
-## 관련 문서
-
-- [JWT 발급/검증 구현 노트](./jwt-auth.md)
-- [User 도메인 구현 노트](./user-domain.md)
