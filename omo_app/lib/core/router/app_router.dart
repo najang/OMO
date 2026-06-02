@@ -7,6 +7,7 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/nickname_setup_page.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/mypage/presentation/pages/mypage_page.dart';
 import '../../features/sample/presentation/pages/sample_page.dart';
 
 part 'app_router.g.dart';
@@ -35,6 +36,9 @@ GoRouter appRouter(Ref ref) {
       if (token.isNewUser && location != Routes.nickname) {
         return Routes.nickname;
       }
+      if (!token.isNewUser && location == Routes.nickname) {
+        return Routes.home;
+      }
       return null;
     },
     routes: [
@@ -51,6 +55,10 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) => const HomePage(),
       ),
       GoRoute(
+        path: Routes.mypage,
+        builder: (context, state) => const MyPagePage(),
+      ),
+      GoRoute(
         path: Routes.sample,
         builder: (context, state) => const SamplePage(),
       ),
@@ -65,6 +73,7 @@ abstract class Routes {
   static const String login = '/login';
   static const String nickname = '/nickname';
   static const String home = '/';
+  static const String mypage = '/mypage';
   static const String sample = '/sample';
 }
 
