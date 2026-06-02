@@ -62,10 +62,40 @@ sequenceDiagram
         DB-->>-API: User
     end
 
-    API-->>-APP: 200 OK<br/>{ accessToken, refreshToken, userId }
+    API-->>-APP: 200 OK<br/>{ accessToken, refreshToken, userId, isNewUser }
 ```
 
+- `isNewUser = true`이면 앱이 닉네임 설정 화면(`/nickname`)으로 이동한다.
+- `isNewUser`는 `onboarding_completed`의 반전값이다. 온보딩 완료 후 재로그인하면 `false`를 반환한다.
+
 > Apple은 SDK에서 받은 identityToken(RS256 JWT)을 Apple JWKS 공개키로 직접 검증한다. Google·Kakao와 달리 별도 검증 API 엔드포인트가 없다.
+
+## 3. 온보딩 — 닉네임 설정
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant APP as Mobile App
+    participant API as Backend API
+    participant DB as MySQL
+
+    APP->>APP: isNewUser = true 확인<br/>→ /nickname 화면 이동
+
+    APP->>+API: PUT /api/v1/users/me/onboarding<br/>{ nickname } + Authorization: Bearer {accessToken}
+    API->>API: JWT에서 userId 추출
+    API->>+DB: User 조회 (userId)
+    DB-->>-API: User
+    API->>API: nickname 유효성 검사<br/>(한글/영어 2~6자)
+
+    alt 유효한 닉네임
+        API->>+DB: nickname 업데이트, onboarding_completed = true
+        DB-->>-API: 완료
+        API-->>-APP: 200 OK { meta: { result: SUCCESS } }
+        APP->>APP: AuthState.isNewUser = false<br/>→ 홈 화면으로 이동
+    else 유효하지 않은 닉네임
+        API-->>APP: 400 INVALID_INPUT
+    end
+```
 
 ## 3. 앱 진입 → 피드백 토스트 흐름
 
