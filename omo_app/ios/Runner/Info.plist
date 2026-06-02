@@ -47,6 +47,11 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>GIDClientID</key>
 	<string>55088206592-god5r5c94oujrbp6tc6qpreggodfh1a6.apps.googleusercontent.com</string>
 	<key>CFBundleURLTypes</key>

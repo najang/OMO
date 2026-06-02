@@ -21,7 +21,7 @@ class AuthRemoteDataSource {
     required String token,
   }) async {
     final response = await _dio.post<Map<String, dynamic>>(
-      '/auth/login',
+      '/api/v1/auth/login',
       data: {
         'provider': provider.name.toUpperCase(),
         'token': token,
