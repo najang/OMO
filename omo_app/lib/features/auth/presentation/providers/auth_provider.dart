@@ -1,4 +1,5 @@
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
@@ -52,9 +53,10 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
-  void completeOnboarding() {
+  Future<void> completeOnboarding(String nickname) async {
     final current = state;
     if (current is! AuthAuthenticated) return;
+    await ref.read(authRepositoryProvider).completeOnboarding(nickname);
     state = AuthAuthenticated(
       AuthToken(
         accessToken: current.token.accessToken,
@@ -103,8 +105,18 @@ class AuthNotifier extends _$AuthNotifier {
   }
 
   Future<void> loginWithKakao() async {
-    // TODO: kakao_flutter_sdk_user 패키지 설정 후 구현
-    state = const AuthError('카카오 로그인은 준비 중입니다.');
+    state = const AuthLoading();
+    try {
+      final OAuthToken token;
+      if (await isKakaoTalkInstalled()) {
+        token = await UserApi.instance.loginWithKakaoTalk();
+      } else {
+        token = await UserApi.instance.loginWithKakaoAccount();
+      }
+      await _loginWithBackend(SocialProvider.kakao, token.accessToken);
+    } catch (e) {
+      state = AuthError(e.toString());
+    }
   }
 
   Future<void> logout() async {

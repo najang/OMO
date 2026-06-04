@@ -22,23 +22,23 @@ GoRouter appRouter(Ref ref) {
     refreshListenable: listenable,
     redirect: (context, state) {
       final authState = ref.read(authNotifierProvider);
-      if (authState is AuthInitial) return null;
+      final location = state.uri.toString();
 
-      final location = state.matchedLocation;
-      if (authState is! AuthAuthenticated) {
+      if (authState is AuthInitial || authState is AuthLoading) return null;
+
+      if (authState is AuthUnauthenticated || authState is AuthError) {
         return location == Routes.login ? null : Routes.login;
       }
 
-      final token = authState.token;
-      if (location == Routes.login) {
-        return token.isNewUser ? Routes.nickname : Routes.home;
+      if (authState is AuthAuthenticated) {
+        if (authState.token.isNewUser) {
+          return location == Routes.nickname ? null : Routes.nickname;
+        }
+        if (location == Routes.login || location == Routes.nickname) {
+          return Routes.home;
+        }
       }
-      if (token.isNewUser && location != Routes.nickname) {
-        return Routes.nickname;
-      }
-      if (!token.isNewUser && location == Routes.nickname) {
-        return Routes.home;
-      }
+
       return null;
     },
     routes: [
