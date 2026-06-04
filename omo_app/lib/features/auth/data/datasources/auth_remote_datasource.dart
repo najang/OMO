@@ -30,4 +30,9 @@ class AuthRemoteDataSource {
     final data = response.data!['data'] as Map<String, dynamic>;
     return AuthTokenModel.fromJson(data);
   }
+
+  Future<void> completeOnboarding(String nickname) => _dio.put<void>(
+        '/api/v1/users/me/onboarding',
+        data: {'nickname': nickname},
+      );
 }

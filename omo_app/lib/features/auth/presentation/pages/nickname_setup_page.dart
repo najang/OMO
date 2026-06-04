@@ -44,8 +44,13 @@ class _NicknameSetupPageState extends ConsumerState<NicknameSetupPage> {
     if (!_isValid || _isLoading) return;
     setState(() => _isLoading = true);
     try {
-      // TODO: API 호출로 닉네임 저장
-      ref.read(authNotifierProvider.notifier).completeOnboarding();
+      await ref.read(authNotifierProvider.notifier).completeOnboarding(_controller.text);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('닉네임 저장에 실패했습니다: $e')),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

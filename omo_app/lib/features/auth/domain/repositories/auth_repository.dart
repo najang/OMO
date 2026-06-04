@@ -7,5 +7,6 @@ abstract interface class AuthRepository {
     required SocialProvider provider,
     required String token,
   });
+  Future<void> completeOnboarding(String nickname);
   Future<void> logout();
 }

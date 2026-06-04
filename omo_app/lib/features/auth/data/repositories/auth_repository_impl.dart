@@ -41,5 +41,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> completeOnboarding(String nickname) =>
+      _remoteDataSource.completeOnboarding(nickname);
+
+  @override
   Future<void> logout() => _tokenStorage.clearTokens();
 }
