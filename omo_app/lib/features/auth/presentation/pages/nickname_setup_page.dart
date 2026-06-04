@@ -29,7 +29,7 @@ class _NicknameSetupPageState extends ConsumerState<NicknameSetupPage> {
   String? _errorText(String text) {
     if (text.isEmpty) return null;
     if (!_validPattern.hasMatch(text)) return '한글 또는 영어만 입력 가능해요';
-    if (text.length < _minLength) return '${_minLength}자 이상 입력해주세요';
+    if (text.length < _minLength) return '$_minLength자 이상 입력해주세요';
     return null;
   }
 
