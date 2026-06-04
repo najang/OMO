@@ -3,6 +3,9 @@ package com.omo.infrastructure.user;
 import com.omo.domain.user.SocialProvider;
 import com.omo.domain.user.User;
 import com.omo.domain.user.UserRepository;
+import com.omo.infrastructure.auth.social.AppleAuthClient;
+import com.omo.infrastructure.auth.social.GoogleAuthClient;
+import com.omo.infrastructure.auth.social.KakaoAuthClient;
 import com.omo.utils.DatabaseCleanUp;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.Optional;
 
@@ -20,6 +24,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 class UserRepositoryImplTest {
+
+    @MockitoBean
+    private GoogleAuthClient googleAuthClient;
+
+    @MockitoBean
+    private KakaoAuthClient kakaoAuthClient;
+
+    @MockitoBean
+    private AppleAuthClient appleAuthClient;
 
     @Autowired
     private UserRepository userRepository;
@@ -151,6 +164,36 @@ class UserRepositoryImplTest {
 
             // assert
             assertThat(google.getId()).isNotEqualTo(apple.getId());
+        }
+    }
+
+    @DisplayName("onboarding_completed 컬럼을 저장할 때,")
+    @Nested
+    class OnboardingPersistence {
+
+        @DisplayName("신규 유저의 기본값은 false다.")
+        @Test
+        void defaultOnboardingCompleted_isFalse() {
+            User saved = userRepository.save(new User("default@omo.com", "기본유저", SocialProvider.GOOGLE, "uid-default-ob"));
+
+            Optional<User> found = userRepository.find(saved.getId());
+
+            assertThat(found.get().isOnboardingCompleted()).isFalse();
+        }
+
+        @DisplayName("completeOnboarding 후 저장하면, onboarding_completed가 true로 영속된다.")
+        @Test
+        void persistsOnboardingCompleted_afterSave() {
+            User saved = userRepository.save(new User("onboard@omo.com", "온보딩유저", SocialProvider.GOOGLE, "uid-ob-persist"));
+            saved.completeOnboarding("햇살곰");
+            userRepository.save(saved);
+
+            Optional<User> reloaded = userRepository.find(saved.getId());
+
+            assertAll(
+                () -> assertThat(reloaded.get().getNickname()).isEqualTo("햇살곰"),
+                () -> assertThat(reloaded.get().isOnboardingCompleted()).isTrue()
+            );
         }
     }
 }

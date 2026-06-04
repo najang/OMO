@@ -33,7 +33,8 @@ public class AuthFacade {
         return new AuthInfo(
             jwtProvider.createAccessToken(user.getId()),
             jwtProvider.createRefreshToken(user.getId()),
-            user.getId()
+            user.getId(),
+            !user.isOnboardingCompleted()
         );
     }
 }

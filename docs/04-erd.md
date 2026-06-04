@@ -15,6 +15,7 @@ erDiagram
         varchar nickname
         varchar provider "GOOGLE/APPLE/KAKAO"
         varchar provider_id "UK: (provider, provider_id)"
+        boolean onboarding_completed "DEFAULT FALSE"
         datetime created_at
         datetime updated_at
     }

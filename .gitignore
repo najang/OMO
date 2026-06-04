@@ -1,4 +1,7 @@
 HELP.md
+docs/implementation/
+**/google-services.json
+**/GoogleService-Info.plist
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar

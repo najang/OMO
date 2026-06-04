@@ -27,4 +27,10 @@ public class UserService {
         return userRepository.findByProviderInfo(provider, providerId)
                 .orElseGet(() -> userRepository.save(new User(email, nickname, provider, providerId)));
     }
+
+    @Transactional
+    public void completeOnboarding(Long userId, String nickname) {
+        User user = getUser(userId);
+        user.completeOnboarding(nickname);
+    }
 }

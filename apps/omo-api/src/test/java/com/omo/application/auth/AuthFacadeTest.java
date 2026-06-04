@@ -57,6 +57,7 @@ class AuthFacadeTest {
             String token = "google-id-token";
             User mockUser = mock(User.class);
             when(mockUser.getId()).thenReturn(42L);
+            when(mockUser.isOnboardingCompleted()).thenReturn(false);
             when(googleClient.fetchUserInfo(token))
                 .thenReturn(new SocialUserInfo("google@omo.com", "구글유저", "g-uid-001"));
             when(userService.getOrCreateUser("google@omo.com", "구글유저", SocialProvider.GOOGLE, "g-uid-001"))
@@ -71,18 +72,41 @@ class AuthFacadeTest {
             assertAll(
                 () -> assertThat(result.accessToken()).isEqualTo("access-token"),
                 () -> assertThat(result.refreshToken()).isEqualTo("refresh-token"),
-                () -> assertThat(result.userId()).isEqualTo(42L)
+                () -> assertThat(result.userId()).isEqualTo(42L),
+                () -> assertThat(result.isNewUser()).isTrue()
             );
+        }
+
+        @DisplayName("온보딩을 완료한 유저가 로그인하면, isNewUser가 false다.")
+        @Test
+        void returnsIsNewUserFalse_whenUserAlreadyOnboarded() {
+            // arrange
+            User mockUser = mock(User.class);
+            when(mockUser.getId()).thenReturn(99L);
+            when(mockUser.isOnboardingCompleted()).thenReturn(true);
+            when(googleClient.fetchUserInfo("token"))
+                .thenReturn(new SocialUserInfo("google@omo.com", "구글유저", "g-uid-001"));
+            when(userService.getOrCreateUser(any(), any(), any(), any())).thenReturn(mockUser);
+            when(jwtProvider.createAccessToken(any())).thenReturn("a");
+            when(jwtProvider.createRefreshToken(any())).thenReturn("r");
+
+            // act
+            AuthInfo result = authFacade.login(SocialProvider.GOOGLE, "token");
+
+            // assert
+            assertThat(result.isNewUser()).isFalse();
         }
 
         @DisplayName("소셜 검증 후, UserService.getOrCreateUser를 정확한 인자로 호출한다.")
         @Test
         void callsGetOrCreateUser_withFetchedUserInfo() {
             // arrange
+            User mockUser = mock(User.class);
+            when(mockUser.getId()).thenReturn(1L);
+            when(mockUser.isOnboardingCompleted()).thenReturn(false);
             when(googleClient.fetchUserInfo("token"))
                 .thenReturn(new SocialUserInfo("test@omo.com", "테스터", "g-uid-999"));
-            when(userService.getOrCreateUser(any(), any(), any(), any()))
-                .thenReturn(new User("test@omo.com", "테스터", SocialProvider.GOOGLE, "g-uid-999"));
+            when(userService.getOrCreateUser(any(), any(), any(), any())).thenReturn(mockUser);
             when(jwtProvider.createAccessToken(any())).thenReturn("a");
             when(jwtProvider.createRefreshToken(any())).thenReturn("r");
 
@@ -93,6 +117,24 @@ class AuthFacadeTest {
             verify(userService).getOrCreateUser(
                 eq("test@omo.com"), eq("테스터"), eq(SocialProvider.GOOGLE), eq("g-uid-999")
             );
+        }
+
+        @DisplayName("UserService.getOrCreateUser가 예외를 던지면, 그대로 전파된다.")
+        @Test
+        void propagatesException_whenUserServiceThrows() {
+            // arrange
+            when(googleClient.fetchUserInfo("token"))
+                .thenReturn(new SocialUserInfo("test@omo.com", "테스터", "g-uid-999"));
+            when(userService.getOrCreateUser(any(), any(), any(), any()))
+                .thenThrow(new CoreException(ErrorType.INVALID_INPUT, "유저 생성 실패"));
+
+            // act
+            CoreException result = assertThrows(CoreException.class, () ->
+                authFacade.login(SocialProvider.GOOGLE, "token")
+            );
+
+            // assert
+            assertThat(result.getErrorType()).isEqualTo(ErrorType.INVALID_INPUT);
         }
 
         @DisplayName("지원하지 않는 프로바이더면, INVALID_INPUT 예외가 발생한다.")

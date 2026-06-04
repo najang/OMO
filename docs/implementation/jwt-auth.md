@@ -137,8 +137,4 @@ void setUp() {
 | 다른 시크릿으로 서명된 토큰 | `JwtException` 발생 |
 | 액세스 ≠ 리프레시 | 두 토큰 값이 다름을 보장 |
 
----
 
-## 관련 문서
-
-- [소셜 로그인 API 구현 노트](./social-login-api.md) — JwtProvider가 최종 사용되는 맥락
