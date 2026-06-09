@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserTempProfileRepository userTempProfileRepository;
 
     @Transactional(readOnly = true)
     public User getUser(Long id) {
@@ -32,5 +33,14 @@ public class UserService {
     public void completeOnboarding(Long userId, String nickname) {
         User user = getUser(userId);
         user.completeOnboarding(nickname);
+    }
+
+    @Transactional
+    public void initTempProfile(User user, double tempOffset) {
+        userTempProfileRepository.findByUser(user)
+                .ifPresentOrElse(
+                        profile -> {},
+                        () -> userTempProfileRepository.save(UserTempProfile.of(user, tempOffset, 0))
+                );
     }
 }
