@@ -53,10 +53,14 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
-  Future<void> completeOnboarding(String nickname) async {
+  Future<void> setupNickname(String nickname) async {
+    if (state is! AuthAuthenticated) return;
+    await ref.read(authRepositoryProvider).completeOnboarding(nickname);
+  }
+
+  Future<void> finalizeOnboarding() async {
     final current = state;
     if (current is! AuthAuthenticated) return;
-    await ref.read(authRepositoryProvider).completeOnboarding(nickname);
     state = AuthAuthenticated(
       AuthToken(
         accessToken: current.token.accessToken,
