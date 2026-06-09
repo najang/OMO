@@ -11,7 +11,9 @@ Base URL: `/api/v1`
 | Method | Endpoint | 설명 | 인증 |
 |--------|----------|------|------|
 | POST | `/auth/login` | 소셜 로그인 (JWT 발급) | 불필요 |
-| PUT | `/users/me/onboarding` | 닉네임 설정 (신규 유저 온보딩) | 필요 |
+| PUT | `/users/me/onboarding` | 닉네임 설정 (온보딩 1단계) | 필요 |
+| POST | `/users/me/wardrobe` | 옷장 카테고리 설정 (온보딩 2단계) | 필요 |
+| POST | `/users/me/temp-profile` | 체감 민감도 초기 설정 (온보딩 3단계) | 필요 |
 | POST | `/devices` | FCM 토큰 등록 | 필요 |
 | GET | `/recommendations/today` | 오늘의 옷차림 추천 조회 | 필요 |
 | GET | `/recommendations?from=&to=` | 기간별 추천 + 피드백 조회 (마이페이지) | 필요 |
@@ -101,4 +103,80 @@ Authorization: Bearer {accessToken}
 | 상태 코드 | errorCode | 원인 |
 |-----------|-----------|------|
 | 400 | `INVALID_INPUT` | 닉네임 형식 오류 (null, 빈 문자열, 길이 초과, 숫자/특수문자 포함) |
+| 401 | `UNAUTHENTICATED` | Authorization 헤더 없음 또는 유효하지 않은 토큰 |
+
+---
+
+## POST /users/me/wardrobe
+
+온보딩 2단계. 유저의 옷장 카테고리를 설정한다. 이미 설정된 경우 전달한 카테고리 목록으로 **전체 교체**된다 (멱등).
+
+**Request Header**
+```
+Authorization: Bearer {accessToken}
+```
+
+**Request Body**
+```json
+{
+  "categories": ["OUTER", "TOP", "PANTS"]
+}
+```
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `categories` | `List<ClothingCategory>` | 보유 의류 카테고리 목록. 최소 1개 필수. `TOP` / `OUTER` / `PANTS` / `SKIRT` / `DRESS` |
+
+**Response**
+```json
+{
+  "meta": { "result": "SUCCESS", "errorCode": null },
+  "data": null
+}
+```
+
+**에러**
+
+| 상태 코드 | errorCode | 원인 |
+|-----------|-----------|------|
+| 400 | `INVALID_INPUT` | categories null, 빈 목록, 알 수 없는 카테고리 값 |
+| 401 | `UNAUTHENTICATED` | Authorization 헤더 없음 또는 유효하지 않은 토큰 |
+
+---
+
+## POST /users/me/temp-profile
+
+온보딩 3단계. 체감 민감도를 선택해 `USER_TEMP_PROFILE` 초기값을 설정한다. **이미 설정된 경우 무시된다** (재설정 불가, 이후 피드백으로만 갱신).
+
+**Request Header**
+```
+Authorization: Bearer {accessToken}
+```
+
+**Request Body**
+```json
+{
+  "tempSensitivity": "COLD"
+}
+```
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `tempSensitivity` | `TempSensitivity` | 체감 민감도. `VERY_COLD`(-2.0) / `COLD`(-1.0) / `NORMAL`(0.0) / `HEAT`(+1.0) / `VERY_HEAT`(+2.0) |
+
+괄호 안은 저장되는 `temp_offset` 값(°C).
+
+**Response**
+```json
+{
+  "meta": { "result": "SUCCESS", "errorCode": null },
+  "data": null
+}
+```
+
+**에러**
+
+| 상태 코드 | errorCode | 원인 |
+|-----------|-----------|------|
+| 400 | `INVALID_INPUT` | tempSensitivity null, 알 수 없는 값 |
 | 401 | `UNAUTHENTICATED` | Authorization 헤더 없음 또는 유효하지 않은 토큰 |

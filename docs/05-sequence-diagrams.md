@@ -70,7 +70,7 @@ sequenceDiagram
 
 > Apple은 SDK에서 받은 identityToken(RS256 JWT)을 Apple JWKS 공개키로 직접 검증한다. Google·Kakao와 달리 별도 검증 API 엔드포인트가 없다.
 
-## 3. 온보딩 — 닉네임 설정
+## 3. 온보딩 전체 흐름
 
 ```mermaid
 sequenceDiagram
@@ -91,13 +91,46 @@ sequenceDiagram
         API->>+DB: nickname 업데이트, onboarding_completed = true
         DB-->>-API: 완료
         API-->>-APP: 200 OK { meta: { result: SUCCESS } }
-        APP->>APP: AuthState.isNewUser = false<br/>→ 홈 화면으로 이동
     else 유효하지 않은 닉네임
         API-->>APP: 400 INVALID_INPUT
     end
+
+    Note over APP,API: 닉네임 완료 후 옷장 설정 화면으로 이동
+
+    APP->>+API: POST /api/v1/users/me/wardrobe<br/>{ categories: ["OUTER","TOP",...] } + Bearer {accessToken}
+    API->>+DB: USER_WARDROBE 조회 (userId)
+    alt 옷장 없음
+        DB-->>API: empty
+        API->>+DB: USER_WARDROBE + USER_WARDROBE_CATEGORY 생성
+        DB-->>-API: 완료
+    else 옷장 있음
+        DB-->>-API: UserWardrobe
+        API->>+DB: USER_WARDROBE_CATEGORY 전체 교체
+        DB-->>-API: 완료
+    end
+    API-->>-APP: 200 OK
+
+    Note over APP,API: 옷장 완료 후 체감 민감도 설정 화면으로 이동
+
+    APP->>+API: POST /api/v1/users/me/temp-profile<br/>{ tempSensitivity: "COLD" } + Bearer {accessToken}
+    API->>+DB: USER_TEMP_PROFILE 조회 (userId)
+    alt 프로필 없음
+        DB-->>API: empty
+        API->>+DB: USER_TEMP_PROFILE 생성 (tempOffset = -1.0)
+        DB-->>-API: 완료
+    else 이미 존재 (재진입 방어)
+        DB-->>-API: UserTempProfile
+        Note over API: 무시 (멱등)
+    end
+    API-->>-APP: 200 OK
+
+    APP->>APP: AuthState.isNewUser = false<br/>→ 홈 화면으로 이동
 ```
 
-## 3. 앱 진입 → 피드백 토스트 흐름
+- 온보딩 3단계: 닉네임 → 옷장 → 체감 민감도. 각 단계는 독립 API로 호출된다
+- 옷장은 멱등 업데이트(있으면 카테고리 교체, 없으면 생성), 체감 민감도는 초기 설정만 허용(이미 있으면 무시)
+
+## 4. 앱 진입 → 피드백 토스트 흐름
 
 ```mermaid
 sequenceDiagram
@@ -134,7 +167,7 @@ sequenceDiagram
     APP-->>-U: 앱 실행 완료
 ```
 
-## 4. 옷차림 추천 조회 + 개인화 보정
+## 5. 옷차림 추천 조회 + 개인화 보정
 
 ```mermaid
 sequenceDiagram
