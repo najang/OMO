@@ -7,6 +7,8 @@ erDiagram
     USER ||--o{ DAILY_RECOMMENDATION : receives
     USER ||--o{ DAILY_FEEDBACK : submits
     USER ||--o| USER_TEMP_PROFILE : has
+    USER ||--o| USER_WARDROBE : has
+    USER_WARDROBE ||--|{ USER_WARDROBE_CATEGORY : contains
     DAILY_RECOMMENDATION ||--o| DAILY_FEEDBACK : "feedback_for"
 
     USER {
@@ -69,6 +71,18 @@ erDiagram
         int feedback_count "누적 피드백 수"
         datetime updated_at
     }
+
+    USER_WARDROBE {
+        bigint id PK
+        bigint user_id FK "UK"
+        datetime created_at
+        datetime updated_at
+    }
+
+    USER_WARDROBE_CATEGORY {
+        bigint wardrobe_id FK
+        varchar category "TOP/OUTER/PANTS/SKIRT/DRESS"
+    }
 ```
 
 ## 핵심 설계 포인트
@@ -79,3 +93,5 @@ erDiagram
 - `USER_TEMP_PROFILE.temp_offset`: 피드백 누적 시 점진적으로 업데이트되는 개인화 보정값
   - 양수 → "더위를 잘 타는 유저" → 추천 옷차림 한 단계 가볍게
   - 음수 → "추위를 잘 타는 유저" → 추천 옷차림 한 단계 두껍게
+- `USER_WARDROBE`는 유저당 1개로 고정 (UK: `user_id`). 옷장 카테고리는 `USER_WARDROBE_CATEGORY`에 행 단위로 저장되며, 설정할 때마다 전체 교체된다
+- `USER_TEMP_PROFILE`은 온보딩 시 초기값(체감 민감도 → `temp_offset`)으로 생성되며 이후 피드백으로 점진 갱신된다. 이미 생성된 경우 재설정 호출은 무시된다
