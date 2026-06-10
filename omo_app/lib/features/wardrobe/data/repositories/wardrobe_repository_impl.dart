@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../domain/entities/clothing_item_catalog.dart';
 import '../../domain/entities/temp_sensitivity.dart';
 import '../../domain/repositories/wardrobe_repository.dart';
 import '../datasources/wardrobe_remote_datasource.dart';
@@ -18,6 +19,13 @@ class WardrobeRepositoryImpl implements WardrobeRepository {
       : _remoteDataSource = remoteDataSource;
 
   final WardrobeRemoteDataSource _remoteDataSource;
+
+  @override
+  Future<List<ClothingItemCatalog>> getClothingItemCatalog() =>
+      _remoteDataSource.getClothingItemCatalog();
+
+  @override
+  Future<List<String>> getWardrobe() => _remoteDataSource.getWardrobe();
 
   @override
   Future<void> setupWardrobe(List<String> itemKeys) =>
