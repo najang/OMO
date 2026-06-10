@@ -25,6 +25,9 @@ class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private UserTempProfileRepository userTempProfileRepository;
+
     @InjectMocks
     private UserService userService;
 
@@ -98,6 +101,40 @@ class UserServiceTest {
             // assert
             assertThat(result).isSameAs(newUser);
             verify(userRepository).save(any(User.class));
+        }
+    }
+
+    @DisplayName("체감 온도 프로필을 초기화할 때,")
+    @Nested
+    class InitTempProfile {
+
+        @DisplayName("프로필이 없으면, 새로 저장한다.")
+        @Test
+        void savesNewProfile_whenNotExists() {
+            // arrange
+            User user = new User("test@omo.com", "테스터", SocialProvider.GOOGLE, "uid-1");
+            when(userTempProfileRepository.findByUser(user)).thenReturn(Optional.empty());
+
+            // act
+            userService.initTempProfile(user, -1.0);
+
+            // assert
+            verify(userTempProfileRepository).save(any(UserTempProfile.class));
+        }
+
+        @DisplayName("프로필이 이미 있으면, save를 호출하지 않는다.")
+        @Test
+        void doesNotSave_whenProfileAlreadyExists() {
+            // arrange
+            User user = new User("test@omo.com", "테스터", SocialProvider.GOOGLE, "uid-1");
+            UserTempProfile existing = UserTempProfile.of(user, -1.0, 0);
+            when(userTempProfileRepository.findByUser(user)).thenReturn(Optional.of(existing));
+
+            // act
+            userService.initTempProfile(user, 2.0);
+
+            // assert
+            verify(userTempProfileRepository, never()).save(any());
         }
     }
 }

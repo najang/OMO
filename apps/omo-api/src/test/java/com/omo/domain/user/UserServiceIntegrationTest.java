@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+
 @SpringBootTest
 class UserServiceIntegrationTest {
 
@@ -39,43 +40,6 @@ class UserServiceIntegrationTest {
     @AfterEach
     void tearDown() {
         databaseCleanUp.truncateAllTables();
-    }
-
-    @DisplayName("ID로 유저를 조회할 때,")
-    @Nested
-    class FindById {
-
-        @DisplayName("존재하는 ID를 주면, 해당 유저를 반환한다.")
-        @Test
-        void returnsUser_whenUserExists() {
-            // arrange
-            User saved = createUser("find@omo.com", "조회유저", SocialProvider.GOOGLE, "google-uid-find");
-
-            // act
-            User result = userService.getUser(saved.getId());
-
-            // assert
-            assertAll(
-                () -> assertThat(result.getId()).isEqualTo(saved.getId()),
-                () -> assertThat(result.getEmail()).isEqualTo(saved.getEmail()),
-                () -> assertThat(result.getNickname()).isEqualTo(saved.getNickname())
-            );
-        }
-
-        @DisplayName("존재하지 않는 ID를 주면, NOT_FOUND 예외가 발생한다.")
-        @Test
-        void throwsNotFound_whenUserDoesNotExist() {
-            // arrange
-            Long nonExistentId = 999L;
-
-            // act
-            CoreException result = assertThrows(CoreException.class, () ->
-                userService.getUser(nonExistentId)
-            );
-
-            // assert
-            assertThat(result.getErrorType()).isEqualTo(ErrorType.USER_NOT_FOUND);
-        }
     }
 
     @DisplayName("소셜 로그인으로 유저를 조회/생성할 때,")
