@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/services/token_storage.dart';
 import '../../domain/entities/auth_token.dart';
+import '../../domain/entities/user_profile.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
 import '../models/auth_token_model.dart';
@@ -43,6 +44,15 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> completeOnboarding(String nickname) =>
       _remoteDataSource.completeOnboarding(nickname);
+
+  @override
+  Future<UserProfile> getMyInfo() async {
+    final data = await _remoteDataSource.getMyInfo();
+    return UserProfile(
+      email: data['email'] as String,
+      nickname: data['nickname'] as String,
+    );
+  }
 
   @override
   Future<void> logout() => _tokenStorage.clearTokens();
