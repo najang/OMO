@@ -4,6 +4,7 @@ import com.omo.application.user.UserFacade;
 import com.omo.interfaces.api.ApiResponse;
 import com.omo.interfaces.api.auth.AuthUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,5 +22,11 @@ public class UserV1Controller implements UserV1ApiSpec {
     public ApiResponse<Object> completeOnboarding(@AuthUser Long userId, @RequestBody UserV1Dto.OnboardingRequest request) {
         userFacade.completeOnboarding(userId, request.nickname());
         return ApiResponse.success();
+    }
+
+    @GetMapping("/me")
+    @Override
+    public ApiResponse<UserV1Dto.MeResponse> getMyInfo(@AuthUser Long userId) {
+        return ApiResponse.success(UserV1Dto.MeResponse.from(userFacade.getMyInfo(userId)));
     }
 }

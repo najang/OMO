@@ -13,4 +13,9 @@ public class UserFacade {
     public void completeOnboarding(Long userId, String nickname) {
         userService.completeOnboarding(userId, nickname);
     }
+
+    public UserInfo getMyInfo(Long userId) {
+        var user = userService.getUser(userId);
+        return new UserInfo(user.getEmail(), user.getNickname());
+    }
 }
