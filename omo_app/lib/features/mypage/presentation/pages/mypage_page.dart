@@ -2,22 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/app_router.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
 
 // ── 설정 메뉴 데이터 ─────────────────────────────────────────────────────────
 
 class _MenuItem {
-  const _MenuItem({required this.icon, required this.label, required this.sub});
+  const _MenuItem({required this.icon, required this.label, required this.sub, this.route});
 
   final IconData icon;
   final String label;
   final String sub;
+  final String? route;
 }
 
 const _menuItems = [
-  _MenuItem(icon: Icons.notifications_outlined, label: '알림 설정',  sub: '매일 오전 7시'),
-  _MenuItem(icon: Icons.location_on_outlined,   label: '위치 설정',  sub: '서울특별시'),
-  _MenuItem(icon: Icons.dark_mode_outlined,     label: '다크 모드',  sub: '사용 안 함'),
+  _MenuItem(icon: Icons.checkroom_outlined,      label: '옷장 관리',  sub: '보유 의류 수정하기', route: Routes.wardrobeManagement),
+  _MenuItem(icon: Icons.notifications_outlined,  label: '알림 설정',  sub: '매일 오전 7시'),
+  _MenuItem(icon: Icons.location_on_outlined,    label: '위치 설정',  sub: '서울특별시'),
+  _MenuItem(icon: Icons.dark_mode_outlined,      label: '다크 모드',  sub: '사용 안 함'),
 ];
 
 // ── 마이페이지 ───────────────────────────────────────────────────────────────
@@ -91,11 +94,13 @@ class MyPagePage extends ConsumerWidget {
 
 // ── 프로필 카드 ──────────────────────────────────────────────────────────────
 
-class _ProfileCard extends StatelessWidget {
+class _ProfileCard extends ConsumerWidget {
   const _ProfileCard();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final myInfo = ref.watch(myInfoProvider);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -119,10 +124,13 @@ class _ProfileCard extends StatelessWidget {
                 stops: [0.0, 0.5, 1.0],
               ),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'O',
-                style: TextStyle(
+                myInfo.maybeWhen(
+                  data: (profile) => profile.nickname.isNotEmpty ? profile.nickname[0] : 'O',
+                  orElse: () => 'O',
+                ),
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
@@ -131,19 +139,27 @@ class _ProfileCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 14),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'OMO 사용자',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF111827)),
-              ),
-              SizedBox(height: 2),
-              Text(
-                'omouser@email.com',
-                style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  myInfo.maybeWhen(
+                    data: (profile) => profile.nickname,
+                    orElse: () => '...',
+                  ),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF111827)),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  myInfo.maybeWhen(
+                    data: (profile) => profile.email,
+                    orElse: () => '',
+                  ),
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -190,7 +206,7 @@ class _MenuRow extends StatelessWidget {
     return Column(
       children: [
         InkWell(
-          onTap: () {},
+          onTap: item.route != null ? () => context.push(item.route!) : null,
           borderRadius: BorderRadius.circular(24),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
