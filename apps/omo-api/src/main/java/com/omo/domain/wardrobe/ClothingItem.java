@@ -18,20 +18,26 @@ public class ClothingItem extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ClothingCategory category;
 
+    @Column(name = "display_group", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ClothingDisplayGroup displayGroup;
+
     @Column(name = "name_ko", nullable = false)
     private String nameKo;
 
     protected ClothingItem() {}
 
-    public static ClothingItem of(String systemKey, ClothingCategory category, String nameKo) {
+    public static ClothingItem of(String systemKey, ClothingCategory category, ClothingDisplayGroup displayGroup, String nameKo) {
         ClothingItem item = new ClothingItem();
         item.systemKey = systemKey;
         item.category = category;
+        item.displayGroup = displayGroup;
         item.nameKo = nameKo;
         return item;
     }
 
     public String getSystemKey() { return systemKey; }
     public ClothingCategory getCategory() { return category; }
+    public ClothingDisplayGroup getDisplayGroup() { return displayGroup; }
     public String getNameKo() { return nameKo; }
 }

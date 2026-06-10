@@ -15,6 +15,11 @@ public class ClothingItemRepositoryImpl implements ClothingItemRepository {
     private final ClothingItemJpaRepository clothingItemJpaRepository;
 
     @Override
+    public List<ClothingItem> findAll() {
+        return clothingItemJpaRepository.findAll();
+    }
+
+    @Override
     public List<ClothingItem> findAllBySystemKeyIn(Collection<String> systemKeys) {
         return clothingItemJpaRepository.findAllBySystemKeyIn(systemKeys);
     }
