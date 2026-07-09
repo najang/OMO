@@ -24,7 +24,7 @@ erDiagram
 
     NOTIFICATION_SETTING {
         bigint id PK
-        bigint user_id FK
+        bigint user_id FK "UK: user_id (1:1)"
         time notification_time "예: 07:30"
         varchar timezone "예: Asia/Seoul"
         varchar location_lat
@@ -94,4 +94,5 @@ erDiagram
   - 양수 → "더위를 잘 타는 유저" → 추천 옷차림 한 단계 가볍게
   - 음수 → "추위를 잘 타는 유저" → 추천 옷차림 한 단계 두껍게
 - `USER_WARDROBE`는 유저당 1개로 고정 (UK: `user_id`). 옷장 카테고리는 `USER_WARDROBE_CATEGORY`에 행 단위로 저장되며, 설정할 때마다 전체 교체된다
+- `NOTIFICATION_SETTING`은 유저당 0..1개 (UK: `user_id`, `uk_notification_setting_user_id`로 1:1 강제). `notification_time`은 미설정(NULL) 허용, `timezone`은 기본 `Asia/Seoul`·`enabled`는 기본 `true`로 애플리케이션 팩토리(`init()`)에서 초기화된다 (DB DEFAULT 미부여). `updated_at`은 `BaseEntity`가 제공
 - `USER_TEMP_PROFILE`은 온보딩 시 초기값(체감 민감도 → `temp_offset`)으로 생성되며 이후 피드백으로 점진 갱신된다. 이미 생성된 경우 재설정 호출은 무시된다
