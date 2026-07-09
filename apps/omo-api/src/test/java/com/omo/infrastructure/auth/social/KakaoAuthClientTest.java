@@ -24,7 +24,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withUnauthorizedRequest;
 
 @DisplayName("KakaoAuthClient —")
-class KakaoAuthClientIntegrationTest {
+class KakaoAuthClientTest {
 
     private static final String USER_ME_URL = "https://kapi.kakao.com/v2/user/me";
 

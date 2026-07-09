@@ -16,9 +16,9 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 class UserWardrobeModelTest {
 
     private static final User USER = new User("test@omo.com", "테스터", SocialProvider.GOOGLE, "uid-1");
-    private static final ClothingItem TOP_ITEM = ClothingItem.of("short-tee", ClothingCategory.TOP, "반팔 티셔츠");
-    private static final ClothingItem OUTER_ITEM = ClothingItem.of("padding", ClothingCategory.OUTER, "패딩");
-    private static final ClothingItem PANTS_ITEM = ClothingItem.of("jeans", ClothingCategory.PANTS, "청바지");
+    private static final ClothingItem TOP_ITEM = ClothingItem.of("short-tee", ClothingCategory.TOP, ClothingDisplayGroup.TOP, "반팔 티셔츠");
+    private static final ClothingItem OUTER_ITEM = ClothingItem.of("padding", ClothingCategory.OUTER, ClothingDisplayGroup.OUTER, "패딩");
+    private static final ClothingItem PANTS_ITEM = ClothingItem.of("jeans", ClothingCategory.PANTS, ClothingDisplayGroup.BOTTOM, "청바지");
 
     @DisplayName("옷장을 생성할 때,")
     @Nested

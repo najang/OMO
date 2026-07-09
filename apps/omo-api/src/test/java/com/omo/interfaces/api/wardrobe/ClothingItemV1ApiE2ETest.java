@@ -1,18 +1,19 @@
-package com.omo.interfaces.api;
+package com.omo.interfaces.api.wardrobe;
 
 import tools.jackson.databind.ObjectMapper;
 import com.omo.application.auth.SocialUserInfo;
-import com.omo.domain.example.ExampleModel;
 import com.omo.domain.user.SocialProvider;
+import com.omo.domain.wardrobe.ClothingCategory;
+import com.omo.domain.wardrobe.ClothingDisplayGroup;
+import com.omo.domain.wardrobe.ClothingItem;
+import com.omo.domain.wardrobe.ClothingItemRepository;
 import com.omo.infrastructure.auth.social.AppleAuthClient;
 import com.omo.infrastructure.auth.social.GoogleAuthClient;
 import com.omo.infrastructure.auth.social.KakaoAuthClient;
-import com.omo.infrastructure.example.ExampleJpaRepository;
 import com.omo.interfaces.api.auth.AuthV1Dto;
 import com.omo.utils.DatabaseCleanUp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +23,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.List;
+
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -29,19 +32,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-class ExampleV1ApiE2ETest {
+class ClothingItemV1ApiE2ETest {
 
-    private static final String EXAMPLE_ENDPOINT = "/api/v1/examples/";
+    private static final String CATALOG_ENDPOINT = "/api/v1/clothing-items";
 
-    private static final String GOOGLE_UID = "g-uid-001";
-    private static final String GOOGLE_TOKEN = "google-token";
+    private static final String GOOGLE_UID = "g-uid-catalog";
+    private static final String GOOGLE_TOKEN = "google-token-catalog";
 
     private MockMvc mockMvc;
 
     @Autowired private ObjectMapper objectMapper;
     @Autowired private WebApplicationContext webApplicationContext;
-    @Autowired private ExampleJpaRepository exampleJpaRepository;
     @Autowired private DatabaseCleanUp databaseCleanUp;
+    @Autowired private ClothingItemRepository clothingItemRepository;
 
     @MockitoBean private GoogleAuthClient googleAuthClient;
     @MockitoBean private KakaoAuthClient kakaoAuthClient;
@@ -54,11 +57,21 @@ class ExampleV1ApiE2ETest {
         when(googleAuthClient.provider()).thenReturn(SocialProvider.GOOGLE);
         when(kakaoAuthClient.provider()).thenReturn(SocialProvider.KAKAO);
         when(appleAuthClient.provider()).thenReturn(SocialProvider.APPLE);
+        seedClothingItems();
+    }
+
+    private void seedClothingItems() {
+        clothingItemRepository.saveAll(List.of(
+            ClothingItem.of("short-tee", ClothingCategory.TOP,       ClothingDisplayGroup.TOP,   "반팔 티셔츠"),
+            ClothingItem.of("skirt",     ClothingCategory.SKIRT,     ClothingDisplayGroup.BOTTOM, "치마"),
+            ClothingItem.of("cap",       ClothingCategory.ACCESSORY, ClothingDisplayGroup.HAT,   "볼캡"),
+            ClothingItem.of("scarf",     ClothingCategory.ACCESSORY, ClothingDisplayGroup.SCARF, "스카프")
+        ));
     }
 
     private String loginAndGetToken() throws Exception {
         when(googleAuthClient.fetchUserInfo(GOOGLE_TOKEN))
-            .thenReturn(new SocialUserInfo("google@omo.com", "구글유저", GOOGLE_UID));
+            .thenReturn(new SocialUserInfo("catalog@omo.com", "카탈로그유저", GOOGLE_UID));
 
         String response = mockMvc.perform(post("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -69,51 +82,27 @@ class ExampleV1ApiE2ETest {
         return objectMapper.readTree(response).at("/data/accessToken").asText();
     }
 
-    @DisplayName("GET /api/v1/examples/{id}")
-    @Nested
-    class Get {
-        @DisplayName("존재하는 예시 ID를 주면, 해당 예시 정보를 반환한다.")
-        @Test
-        void returnsExampleInfo_whenValidIdIsProvided() throws Exception {
-            // arrange
-            String token = loginAndGetToken();
-            ExampleModel exampleModel = exampleJpaRepository.save(
-                new ExampleModel("예시 제목", "예시 설명")
-            );
+    @DisplayName("GET /api/v1/clothing-items —")
+    @Test
+    void returns200_withFullCatalog() throws Exception {
+        String token = loginAndGetToken();
 
-            // act & assert
-            mockMvc.perform(get(EXAMPLE_ENDPOINT + exampleModel.getId())
-                    .header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.meta.result").value("SUCCESS"))
-                .andExpect(jsonPath("$.data.id").value(exampleModel.getId()))
-                .andExpect(jsonPath("$.data.name").value(exampleModel.getName()))
-                .andExpect(jsonPath("$.data.description").value(exampleModel.getDescription()));
-        }
+        mockMvc.perform(get(CATALOG_ENDPOINT)
+                .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.meta.result").value("SUCCESS"))
+            .andExpect(jsonPath("$.data.items").isArray())
+            .andExpect(jsonPath("$.data.items.length()").value(4))
+            .andExpect(jsonPath("$.data.items[0].systemKey").isNotEmpty())
+            .andExpect(jsonPath("$.data.items[0].category").isNotEmpty())
+            .andExpect(jsonPath("$.data.items[0].displayGroup").isNotEmpty())
+            .andExpect(jsonPath("$.data.items[0].nameKo").isNotEmpty());
+    }
 
-        @DisplayName("숫자가 아닌 ID 로 요청하면, 400 BAD_REQUEST 응답을 받는다.")
-        @Test
-        void throwsBadRequest_whenIdIsNotProvided() throws Exception {
-            // arrange
-            String token = loginAndGetToken();
-
-            // act & assert
-            mockMvc.perform(get(EXAMPLE_ENDPOINT + "나나")
-                    .header("Authorization", "Bearer " + token))
-                .andExpect(status().isBadRequest());
-        }
-
-        @DisplayName("존재하지 않는 예시 ID를 주면, 404 NOT_FOUND 응답을 받는다.")
-        @Test
-        void throwsException_whenInvalidIdIsProvided() throws Exception {
-            // arrange
-            String token = loginAndGetToken();
-            Long invalidId = -1L;
-
-            // act & assert
-            mockMvc.perform(get(EXAMPLE_ENDPOINT + invalidId)
-                    .header("Authorization", "Bearer " + token))
-                .andExpect(status().isNotFound());
-        }
+    @DisplayName("Authorization 헤더가 없으면, 401을 반환한다.")
+    @Test
+    void returns401_whenNoAuthorizationHeader() throws Exception {
+        mockMvc.perform(get(CATALOG_ENDPOINT))
+            .andExpect(status().isUnauthorized());
     }
 }

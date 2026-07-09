@@ -35,4 +35,9 @@ class AuthRemoteDataSource {
         '/api/v1/users/me/onboarding',
         data: {'nickname': nickname},
       );
+
+  Future<Map<String, dynamic>> getMyInfo() async {
+    final response = await _dio.get<Map<String, dynamic>>('/api/v1/users/me');
+    return response.data!['data'] as Map<String, dynamic>;
+  }
 }

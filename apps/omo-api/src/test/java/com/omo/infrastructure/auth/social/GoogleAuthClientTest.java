@@ -23,7 +23,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withUnauthorizedRequest;
 
 @DisplayName("GoogleAuthClient —")
-class GoogleAuthClientIntegrationTest {
+class GoogleAuthClientTest {
 
     private static final String TOKENINFO_URL = "https://oauth2.googleapis.com/tokeninfo";
 

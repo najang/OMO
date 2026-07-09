@@ -29,6 +29,9 @@ public enum ErrorType {
     // ── User ──────────────────────────────────────────────────────────────────
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "사용자를 찾을 수 없습니다."),
 
+    // ── Wardrobe ──────────────────────────────────────────────────────────────
+    WARDROBE_NOT_FOUND(HttpStatus.NOT_FOUND, "WARDROBE_NOT_FOUND", "옷장을 찾을 수 없습니다."),
+
     // ── 날씨 ──────────────────────────────────────────────────────────────────
     WEATHER_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "WEATHER_UNAVAILABLE", "날씨 정보를 가져올 수 없습니다. 잠시 후 다시 시도해주세요.");
 

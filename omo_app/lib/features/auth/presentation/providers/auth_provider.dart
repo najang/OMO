@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -6,9 +7,14 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../../../core/services/token_storage.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/entities/auth_token.dart';
+import '../../domain/entities/user_profile.dart';
 import '../../domain/repositories/auth_repository.dart';
 
 part 'auth_provider.g.dart';
+
+@riverpod
+Future<UserProfile> myInfo(Ref ref) =>
+    ref.watch(authRepositoryProvider).getMyInfo();
 
 sealed class AuthState {
   const AuthState();

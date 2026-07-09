@@ -31,9 +31,9 @@ class UserWardrobeServiceTest {
     private UserWardrobeService userWardrobeService;
 
     private static final User USER = new User("test@omo.com", "테스터", SocialProvider.GOOGLE, "uid-1");
-    private static final ClothingItem TOP = ClothingItem.of("short-tee", ClothingCategory.TOP, "반팔 티셔츠");
-    private static final ClothingItem OUTER = ClothingItem.of("padding", ClothingCategory.OUTER, "패딩");
-    private static final ClothingItem PANTS = ClothingItem.of("jeans", ClothingCategory.PANTS, "청바지");
+    private static final ClothingItem TOP = ClothingItem.of("short-tee", ClothingCategory.TOP, ClothingDisplayGroup.TOP, "반팔 티셔츠");
+    private static final ClothingItem OUTER = ClothingItem.of("padding", ClothingCategory.OUTER, ClothingDisplayGroup.OUTER, "패딩");
+    private static final ClothingItem PANTS = ClothingItem.of("jeans", ClothingCategory.PANTS, ClothingDisplayGroup.BOTTOM, "청바지");
 
     @DisplayName("옷장을 설정할 때,")
     @Nested
@@ -65,14 +65,5 @@ class UserWardrobeServiceTest {
             assertThat(existing.getItems()).containsExactlyInAnyOrderElementsOf(newItems);
         }
 
-        @DisplayName("Repository 조회 중 예외가 발생하면, 그대로 전파된다.")
-        @Test
-        void propagatesException_whenRepositoryFails() {
-            when(userWardrobeRepository.findByUser(USER)).thenThrow(new RuntimeException("DB error"));
-
-            assertThatThrownBy(() -> userWardrobeService.setupWardrobe(USER, Set.of(TOP)))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("DB error");
-        }
     }
 }

@@ -32,7 +32,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @DisplayName("AppleAuthClient —")
-class AppleAuthClientIntegrationTest {
+class AppleAuthClientTest {
 
     private static final String APPLE_JWKS_URL = "https://appleid.apple.com/auth/keys";
     private static final String TEST_CLIENT_ID = "com.omo.test";

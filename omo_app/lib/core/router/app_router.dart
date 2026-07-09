@@ -9,6 +9,7 @@ import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/mypage/presentation/pages/mypage_page.dart';
 import '../../features/sample/presentation/pages/sample_page.dart';
+import '../../features/wardrobe/presentation/pages/wardrobe_management_page.dart';
 
 part 'app_router.g.dart';
 
@@ -62,6 +63,10 @@ GoRouter appRouter(Ref ref) {
         path: Routes.sample,
         builder: (context, state) => const SamplePage(),
       ),
+      GoRoute(
+        path: Routes.wardrobeManagement,
+        builder: (context, state) => const WardrobeManagementPage(),
+      ),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(child: Text('Page not found: ${state.error}')),
@@ -75,6 +80,7 @@ abstract class Routes {
   static const String home = '/';
   static const String mypage = '/mypage';
   static const String sample = '/sample';
+  static const String wardrobeManagement = '/wardrobe-management';
 }
 
 class _AuthListenable extends ChangeNotifier {

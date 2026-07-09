@@ -6,6 +6,23 @@ part of 'auth_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+String _$myInfoHash() => r'11354467003ae6250b1c9ed60fdbdecafed2f7dd';
+
+/// See also [myInfo].
+@ProviderFor(myInfo)
+final myInfoProvider = AutoDisposeFutureProvider<UserProfile>.internal(
+  myInfo,
+  name: r'myInfoProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$myInfoHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef MyInfoRef = AutoDisposeFutureProviderRef<UserProfile>;
 String _$authNotifierHash() => r'9f4d46a61126acb69eebdec2c9c74efacfe67ac6';
 
 /// See also [AuthNotifier].
