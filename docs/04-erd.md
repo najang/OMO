@@ -36,8 +36,8 @@ erDiagram
 
     DEVICE_TOKEN {
         bigint id PK
-        bigint user_id FK
-        varchar fcm_token
+        bigint user_id FK "INDEX (non-unique, 1:N)"
+        varchar fcm_token "UK: fcm_token"
         varchar device_type "IOS/ANDROID"
         datetime last_used_at
     }
@@ -95,4 +95,5 @@ erDiagram
   - 음수 → "추위를 잘 타는 유저" → 추천 옷차림 한 단계 두껍게
 - `USER_WARDROBE`는 유저당 1개로 고정 (UK: `user_id`). 옷장 카테고리는 `USER_WARDROBE_CATEGORY`에 행 단위로 저장되며, 설정할 때마다 전체 교체된다
 - `NOTIFICATION_SETTING`은 유저당 0..1개 (UK: `user_id`, `uk_notification_setting_user_id`로 1:1 강제). `notification_time`은 미설정(NULL) 허용, `timezone`은 기본 `Asia/Seoul`·`enabled`는 기본 `true`로 애플리케이션 팩토리(`init()`)에서 초기화된다 (DB DEFAULT 미부여). `updated_at`은 `BaseEntity`가 제공
+- `DEVICE_TOKEN`은 유저당 여러 개 (1:N). `user_id`엔 UNIQUE가 아닌 조회용 일반 인덱스(`idx_device_token_user_id`)를 걸고, `fcm_token`에 UNIQUE(`uk_device_token_fcm_token`)로 동일 토큰 중복 등록을 막는다. `device_type`은 `IOS`/`ANDROID` enum(`@Enumerated(STRING)`), `last_used_at`은 토큰 마지막 사용 시각으로 `register()` 시 `now()`로 채워진다 (`created_at`/`updated_at`과 별개 의미)
 - `USER_TEMP_PROFILE`은 온보딩 시 초기값(체감 민감도 → `temp_offset`)으로 생성되며 이후 피드백으로 점진 갱신된다. 이미 생성된 경우 재설정 호출은 무시된다
